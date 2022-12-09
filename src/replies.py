@@ -1,0 +1,7 @@
+MENU_REPLY = "🍿 Hi! With this bot you can quickly search for films, TV shows and upcoming masterpices. \n\nJust send me a title to search, or use the menu below. For all options, read /help"
+SEARCH_REPLY = "🔍 Search\n\nPerform a multi-search by using following commands:\n\t/movie «title»: Search for films and documentaries\n\t/tv «title»: Search TV shows, Netflix series, etc"
+RATINGS_REPLY = "<b>Discover</b>\nDiscover movies, TV shows and people by popularity"
+RATINGS_TYPE_REPLY = "Choose a particular rating👇"
+PRODUCT_TYPE_REPLY = "Choose a particular type of product👇"
+MOVIE_REPLY = "🔍 Results » Movies » {0}"
+TV_REPLY = "🔍 Results » TV-Shows » {0}"
