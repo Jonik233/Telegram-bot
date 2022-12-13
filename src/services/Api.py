@@ -12,6 +12,9 @@ class ApiService:
     #url that leads to a specif list of crew members which is requested by a particular tconstant
     __crew_url = "https://imdb8.p.rapidapi.com/title/get-top-crew"
     
+    #url that leads to top rated movies
+    __top_rated_movies_url = "https://online-movie-database.p.rapidapi.com/title/get-top-rated-movies"
+    
     #query which is used for general search request(general_url) 
     __general_querystring = {"q":""}
     
@@ -20,7 +23,7 @@ class ApiService:
     
     #RapidApi headers
     __headers = {
-        "X-RapidAPI-Key": "d1da95091dmshbfab9027251f236p1ecdd1jsn655ed43a9258",
+        "X-RapidAPI-Key": "e93353dad1msh2f0b276cbf2c4d8p19e880jsnec75409e79e0",
         "X-RapidAPI-Host": "online-movie-database.p.rapidapi.com"
     }
     
@@ -81,7 +84,7 @@ class ApiService:
                                         seriesEndYear=Parser.parse_series_end_year(tv_info))
         
         return str(template)
-    
+
     @classmethod
     def get_actors(cls, tconst):
         
@@ -124,6 +127,17 @@ class ApiService:
         
         return None
     
+    @classmethod
+    def get_top_rated_movies(cls):
+        
+        response = requests.request("GET", cls.__top_rated_movies_url, headers=cls.__headers).json()[:30]
+        results = []
+        
+        for result in response:
+            results.append(result["id"].split("/")[2])
+        
+        return results
+
     @classmethod
     def product_is_movie(cls, tconst):
         
