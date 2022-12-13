@@ -34,7 +34,7 @@ class MarkUp:
     @staticmethod
     def searchResultsMarkUp(search_request: str, product_type: str):
         products = api.ApiService.get_products(search_request, product_type)
-        searchMarkUp = MarkUp.createMarkup([InlineKeyboardButton(text=product["l"], callback_data=product["id"] + " " + search_request) for product in products], row_width=1)
+        searchMarkUp = MarkUp.createMarkup([InlineKeyboardButton(text=product["title" if product_type == "movie" else "name"], callback_data=str(product["id"]) + " " + product_type + " " + search_request) for product in products], row_width=1)
         searchMarkUp.add(closeButton)
         return searchMarkUp
     
@@ -43,7 +43,7 @@ class MarkUp:
         rating_markup = InlineKeyboardMarkup(row_width=3)
         
         for tconst in tconsts:
-            product = api.ApiService.get_product(tconst)
+            product = None
             rating_markup.add(InlineKeyboardButton(text=product["title"]["title"], callback_data=tconst))
         
         rating_markup.add(left_button).insert(homeButton).insert(right_button)

@@ -106,16 +106,17 @@ async def go_left_handler(callback: types.CallbackQuery):
     else:
         await callback.answer("You can't go right")
     
-@dp.callback_query_handler(text_contains='tt')
+@dp.callback_query_handler(text_contains=' ')
 async def tconstant_callback_handler(callback: types.CallbackQuery):
     await callback.answer("Loading..")
     
-    tconst = callback.data.split()[0]
-    title = ' '.join(callback.data.split()[1:])
+    id = callback.data.split()[0]
+    title = ' '.join(callback.data.split()[2:])
+    product_type = callback.data.split()[1]
     
-    if api.ApiService.product_is_movie(tconst):
-        await callback.message.answer(text=api.ApiService.movie_model(tconst), reply_markup=buttons.MarkUp.createMarkup([buttons.Button.createBackButton(title, "movie")]), parse_mode="HTML")
-    elif api.ApiService.product_is_tvshow(tconst):
-        await callback.message.answer(text=api.ApiService.tv_model(tconst), reply_markup=buttons.MarkUp.createMarkup([buttons.Button.createBackButton(title, "tvSeries")]), parse_mode="HTML")
-    
+    if product_type == "movie":
+        await callback.message.answer(text=api.ApiService.movie_model(id), reply_markup=buttons.MarkUp.createMarkup([buttons.Button.createBackButton(title, product_type)]), parse_mode="HTML")
+    else:
+        await callback.message.answer(text=api.ApiService.tv_model(id), reply_markup=buttons.MarkUp.createMarkup([buttons.Button.createBackButton(title, product_type)]), parse_mode="HTML")
+     
     await callback.message.delete()

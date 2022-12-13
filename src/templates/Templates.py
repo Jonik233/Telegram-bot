@@ -1,6 +1,7 @@
 class Template:
     def __init__(self, 
                  title:str=None, 
+                 tagline:str=None,
                  summary:str=None, 
                  genres:str=None, 
                  image_url:str=None, 
@@ -11,6 +12,7 @@ class Template:
                  year_of_exposure:int=None):
                 
         self.__title = title
+        self.__tagline = tagline
         self.__summary = summary
         self.__genres = genres
         self.__image_url = image_url
@@ -27,6 +29,12 @@ class Template:
         return "Undefined"
     
     @property
+    def tagline(self):
+        if self.__tagline:
+            return self.__tagline
+        return ""     
+    
+    @property
     def summary(self):
         if self.__summary:
             return self.__summary
@@ -41,9 +49,9 @@ class Template:
     @property
     def image_url(self):
         if self.__image_url:
-            return self.__image_url
+            return "http://image.tmdb.org/t/p/w500" + self.__image_url
         return "https://s3picturehouses.s3.eu-central-1.amazonaws.com/header/ph_15578516125cdaeddcb58a7.jpg"
-    
+        
     @property
     def average_rating(self):
         if self.__average_rating:
@@ -79,7 +87,8 @@ class MovieTemplate(Template):
     def __str__(self):
         return f"""
         <b><a href='{str(self.image_url)}'>{self.title}({self.year_of_exposure})</a></b>
-        \n<b>Genres: </b><a>{', '.join(self.genres)}</a>
+<i>{self.tagline}</i>
+        \n<b>Genres: </b><a>{', '.join([genre["name"] for genre in self.genres])}</a>
         \n📓{self.summary}
         \n<b>Average rating: </b>\n<a href = '{str(self.image_url)}'>IMDB: </a><b>{self.average_rating}</b>
         \n<b>Main actors: </b>{self.actors}
@@ -92,6 +101,7 @@ class TvTemplate(Template):
     
     def __init__(self, 
                  title:str=None, 
+                 tagline:str=None,
                  summary:str=None, 
                  genres:str=None, 
                  image_url:str=None, 
@@ -103,7 +113,7 @@ class TvTemplate(Template):
                  seriesStartYear:int=None,
                  seriesEndYear:int=None):
         
-        super().__init__(title, summary, genres=genres, image_url=image_url, average_rating=average_rating, actors=actors,time_running=time_running)
+        super().__init__(title=title, tagline=tagline, summary=summary, genres=genres, image_url=image_url, average_rating=average_rating, actors=actors,time_running=time_running)
         
         self.__seasons = seasons
         self.__episodes = episodes
@@ -137,10 +147,12 @@ class TvTemplate(Template):
     def __str__(self):
         return f"""
         <b><a href='{str(self.image_url)}'>{self.title}({self.seriesStartYear})</a></b>
-        \n<b>Genres: </b><a>{', '.join(self.genres)}</a>
+<i>{self.tagline}</i>
+        \n<b>Genres: </b><a>{', '.join([genre["name"] for genre in self.genres])}</a>
         \n📓{self.summary}
         \n<b>Average rating: </b>\n<a href = '{str(self.image_url)}'>IMDB: </a><b>{self.average_rating}</b>
         \n<b>Main actors: </b>{self.actors}
 <b>Episodes: </b>{self.episodes}
+<b>Seasons: </b>{self.seasons}
         \n<b>{self.time_running} min.</b> | <b>{self.seriesStartYear} - {self.seriesEndYear}</b>
         """
