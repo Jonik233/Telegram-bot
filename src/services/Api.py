@@ -14,9 +14,22 @@ class ApiService:
     
     __tv_details_url = "https://api.themoviedb.org/3/tv/{0}?api_key=15e383204c1b8a09dbfaaa4c01ed7e17&language=en-US"
     
+    __person_search_url = "https://api.themoviedb.org/3/search/person?api_key=15e383204c1b8a09dbfaaa4c01ed7e17&language=en-US&page=1&include_adult=false&query={0}"
+    
+    __person_details_url = "https://api.themoviedb.org/3/person/{0}?api_key=15e383204c1b8a09dbfaaa4c01ed7e17&language=en-US"
+    
+    __person_credits_url = "https://api.themoviedb.org/3/person/{0}/movie_credits?api_key=15e383204c1b8a09dbfaaa4c01ed7e17&language=en-US"
+    
     __tv_credits_url = "https://api.themoviedb.org/3/tv/{0}/aggregate_credits?api_key=15e383204c1b8a09dbfaaa4c01ed7e17&language=en-US"
         
     __top_rated_movies_url = "https://api.themoviedb.org/3/movie/top_rated?api_key=15e383204c1b8a09dbfaaa4c01ed7e17&language=en-US&page=1"
+    
+    __top_rated_tv_url = "https://api.themoviedb.org/3/tv/top_rated?api_key=15e383204c1b8a09dbfaaa4c01ed7e17&language=en-US&page=1"
+    
+    __trending_movies_url = "https://api.themoviedb.org/3/movie/popular?api_key=15e383204c1b8a09dbfaaa4c01ed7e17&language=en-US&page=1"
+    
+    __trending_tv_url = "https://api.themoviedb.org/3/tv/popular?api_key=15e383204c1b8a09dbfaaa4c01ed7e17&language=en-US&page=1"
+    
     
     @classmethod
     def get_products(cls, search_request, product_type):
@@ -24,10 +37,27 @@ class ApiService:
         url = cls.__movie_search_url.format(search_request) if product_type == "movie" else cls.__tv_search_url.format(search_request)
         
         response = requests.request("GET", url).json()
-        results = response["results"]
         
-        return results
+        return response["results"]
 
+    @classmethod
+    def get_people(cls, search_request):
+        
+        url = cls.__person_search_url.format(search_request)
+        
+        response = requests.request("GET", url).json()
+        
+        return response["results"]
+    
+    @classmethod
+    def get_person_details(cls, id):
+        
+        url = cls.__person_details_url.format(id)
+        
+        response = requests.request("GET", url)
+        
+        return response.json()
+            
     @classmethod
     def get_movie_details(cls, id):
 
@@ -65,6 +95,18 @@ class ApiService:
         return response
     
     @classmethod
+    def get_films_of_actor(cls, id):
+        
+        url = cls.__person_credits_url.format(id)
+        
+        response = requests.request("GET", url).json()["cast"]
+        
+        movies = response[:5]
+        titles = ', '.join([movie["title"] for movie in movies])
+        
+        return titles
+    
+    @classmethod
     def movie_model(cls, id):
         movie_details = cls.get_movie_details(id)
         template = templates.MovieTemplate(title=movie_details["title"], 
@@ -97,7 +139,20 @@ class ApiService:
                                            seriesEndYear=tv_details["last_air_date"].split("-")[0]
                                            )
         return str(template)
+    
+    @classmethod
+    def person_model(cls, id):
+        person_details = cls.get_person_details(id)
+        template = templates.PersonTemplate(name=person_details["name"],
+                                            birthday=person_details["birthday"],
+                                            birth_location=person_details["place_of_birth"],
+                                            bio=person_details["biography"],
+                                            shooted_in=cls.get_films_of_actor(id),
+                                            image_url=person_details["profile_path"]
+                                            )
         
+        return str(template)
+    
     @classmethod
     def get_actors(cls, id, product_type):
  
@@ -129,4 +184,33 @@ class ApiService:
         
         response = requests.request("GET", url).json()
         
-        return response
+        return response["results"][:10]
+    
+    @classmethod
+    def get_top_rated_tv(cls):
+        
+        url = cls.__top_rated_tv_url
+        
+        response = requests.request("GET", url).json()
+        
+        return response["results"][:10]
+    
+    
+    @classmethod
+    def get_trending_movies(cls):
+        
+        url = cls.__trending_movies_url
+        
+        response = requests.request("GET", url).json()
+        
+        return response["results"][:10]
+    
+    @classmethod
+    def get_trending_tv(cls):
+        
+        url = cls.__trending_tv_url
+        
+        response = requests.request("GET", url).json()
+        
+        return response["results"][:10]
+    

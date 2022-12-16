@@ -156,3 +156,64 @@ class TvTemplate(Template):
 <b>Seasons: </b>{self.seasons}
         \n<b>{self.time_running} min.</b> | <b>{self.seriesStartYear} - {self.seriesEndYear}</b>
         """
+        
+class PersonTemplate:
+    
+    def __init__(self,
+                 name:str=None,
+                 birthday:str=None,
+                 birth_location:str=None,
+                 bio:str=None,
+                 shooted_in:list=None,
+                 image_url:str=None
+                 ):
+        
+        self.__name = name
+        self.__birthday = birthday
+        self.__birth_location = birth_location
+        self.__bio = bio
+        self.__shooted_in = shooted_in
+        self.__image_url = image_url
+        
+    @property
+    def name(self):
+        if self.__name:
+            return self.__name
+        return "Undefined"
+    
+    @property
+    def birthday(self):
+        if self.__birthday:
+            return self.__birthday
+        return "Undefined"
+    
+    @property
+    def birth_location(self):
+        if self.__birth_location:
+            return self.__birth_location
+        return "Undefined"
+    
+    @property
+    def bio(self):
+        if self.__bio:
+            return self.__bio
+        return "Undefined"
+    
+    @property
+    def shooted_in(self):
+        if self.__shooted_in:
+            return self.__shooted_in
+        return "Undefined"
+    
+    @property
+    def image_url(self):
+        if self.__image_url:
+            return "http://image.tmdb.org/t/p/w500" + self.__image_url
+        return "https://i.pinimg.com/originals/8c/bb/1a/8cbb1a6cb0583a5e193da0d43be54345.jpg"
+    
+    
+    def __str__(self):
+        return f"""
+        <b><a href='{str(self.image_url)}'>{self.name}</a></b>\n\n<b>Born: </b>{self.birthday}\n<b>City: </b>{self.birth_location}\n\n{self.bio}
+        \n<b>Was filmed in: </b>{self.shooted_in}
+    """

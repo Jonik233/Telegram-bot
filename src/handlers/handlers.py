@@ -1,10 +1,9 @@
 from bot import bot, dp
-from keyboards import buttons, slider
+from keyboards import buttons
 from services import api
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 import replies
-
 
 @dp.message_handler(Command("start"))
 async def start(message: types.Message):
@@ -28,18 +27,32 @@ async def tv_handler(message: types.Message):
         title = " ".join(message.text.split()[1:])
         await bot.send_message(chat_id=message.from_user.id, text=replies.TV_REPLY.format(title), reply_markup=buttons.MarkUp.searchResultsMarkUp(title, "tvSeries"))
         await message.delete()
-
+    
+@dp.message_handler(Command("person"))
+async def person_handler(message: types.Message):
+    if len(message.text.split()) == 1:
+        await bot.send_message(chat_id=message.from_user.id, text="Usage: /person «name»")
+    else:
+        name = " ".join(message.text.split()[1:])
+        await bot.send_message(chat_id=message.from_user.id, text=replies.PERSON_REPLY.format(name), reply_markup=buttons.MarkUp.personSearchMarkUp(name))
+        await message.delete()
+        
 @dp.message_handler(Command("ratings"))
 async def ratings_handler(message: types.Message):
     await bot.send_message(chat_id=message.from_user.id, text=replies.RATINGS_TYPE_REPLY, reply_markup=buttons.RatingBar.raitingMarkup)
     await message.delete()
+
+@dp.callback_query_handler(text="help")
+async def help_handler(callback: types.CallbackQuery):
+    await callback.message.answer(text=replies.HELP_REPLY, reply_markup=buttons.MarkUp.createMarkup([buttons.homeButton]))
+    await callback.message.delete()
     
-@dp.callback_query_handler(text_contains='search')
+@dp.callback_query_handler(text='search')
 async def search_callback_handler(callback: types.CallbackQuery):
     await callback.message.answer(text=replies.SEARCH_REPLY, reply_markup=buttons.MarkUp.createMarkup([buttons.homeButton]))
     await callback.message.delete()
 
-@dp.callback_query_handler(text_contains='home')
+@dp.callback_query_handler(text='home')
 async def home_callback_handler(callback: types.CallbackQuery):
     await callback.message.answer(text=replies.MENU_REPLY, reply_markup=buttons.MenuBar.menuMarkup)
     await callback.message.delete()
@@ -76,47 +89,81 @@ async def movie_rate_handler(callback: types.CallbackQuery):
 
 @dp.callback_query_handler(text='movie_general')
 async def movie_general_rating_handler(callback: types.CallbackQuery):
-    slider.Slider.data = api.ApiService.get_top_rated_movies()
-    await callback.message.answer(text="🏆Top rated movies", reply_markup=slider.Slider.get_current_page())
+    await callback.message.answer(text="🏆Top rated movies", reply_markup=buttons.MarkUp.generalRatingResultsMarkUp("movie"))
     await callback.message.delete()
 
 @dp.callback_query_handler(text='movie_trending')
 async def movie_trending_rating_handler(callback: types.CallbackQuery):
-    pass
-
+    await callback.message.answer(text="📈Trending movies", reply_markup=buttons.MarkUp.trendingRatingResultsMarkUp("movie"))
+    await callback.message.delete()
+    
 @dp.callback_query_handler(text='tv_general')
 async def tv_general_rating_hendler(callback: types.CallbackQuery):
-    pass
+    await callback.message.answer(text="🏆Top rated tv-series", reply_markup=buttons.MarkUp.generalRatingResultsMarkUp("tvSeries"))
+    await callback.message.delete()
 
 @dp.callback_query_handler(text="tv_trending")
 async def tv_trending_rating_handler(callback: types.CallbackQuery):
-    pass
-
-@dp.callback_query_handler(text="left")
-async def go_left_handler(callback: types.CallbackQuery):
-    if slider.Slider.go_left():
-        await callback.message.edit_reply_markup(slider.Slider.go_left())
-    else:
-        await callback.answer("You can't go left")
-
-@dp.callback_query_handler(text="right")
-async def go_left_handler(callback: types.CallbackQuery):
-    if slider.Slider.go_right():
-        await callback.message.edit_reply_markup(slider.Slider.go_right())
-    else:
-        await callback.answer("You can't go right")
+    await callback.message.answer(text="📈Trending tv-series", reply_markup=buttons.MarkUp.trendingRatingResultsMarkUp("tvSeries"))
+    await callback.message.delete()
     
-@dp.callback_query_handler(text_contains=' ')
-async def tconstant_callback_handler(callback: types.CallbackQuery):
+@dp.callback_query_handler(text_contains='search ')
+async def search_callback_handler(callback: types.CallbackQuery):
     await callback.answer("Loading..")
     
-    id = callback.data.split()[0]
-    title = ' '.join(callback.data.split()[2:])
-    product_type = callback.data.split()[1]
-    
+    data = callback.data.split()
+    id = data[1]
+    product_type = data[2]
+    title = ' '.join(data[3:])
+        
     if product_type == "movie":
-        await callback.message.answer(text=api.ApiService.movie_model(id), reply_markup=buttons.MarkUp.createMarkup([buttons.Button.createBackButton(title, product_type)]), parse_mode="HTML")
+        await callback.message.answer(text=api.ApiService.movie_model(id), reply_markup=buttons.MarkUp.createMarkup([buttons.Button.createMediaSearchBackButton(title, product_type)]), parse_mode="HTML")
     else:
-        await callback.message.answer(text=api.ApiService.tv_model(id), reply_markup=buttons.MarkUp.createMarkup([buttons.Button.createBackButton(title, product_type)]), parse_mode="HTML")
-     
+        await callback.message.answer(text=api.ApiService.tv_model(id), reply_markup=buttons.MarkUp.createMarkup([buttons.Button.createMediaSearchBackButton(title, product_type)]), parse_mode="HTML") 
+         
+    await callback.message.delete()
+    
+@dp.callback_query_handler(text_contains='ratings ')
+async def ratings_callback_handler(callback: types.CallbackQuery):
+    await callback.answer("Loading..")
+    
+    data = callback.data.split()
+    id = data[1]
+    product_type = data[2]
+    rating_type = data[3]
+    
+    if product_type == "movie" and rating_type == "general":
+        await callback.message.answer(text=api.ApiService.movie_model(id), 
+                                      reply_markup=buttons.MarkUp.createMarkup([buttons.Button.createCustomButton("< Back", "movie_general")], row_width=1), parse_mode="HTML")
+   
+    elif product_type == "movie" and rating_type == "trending":
+        await callback.message.answer(text=api.ApiService.movie_model(id), reply_markup=buttons.MarkUp.createMarkup([buttons.Button.createCustomButton("< Back", "movie_trending")], row_width=1), parse_mode="HTML")
+   
+    elif product_type == "tvSeries" and rating_type == "general":
+        await callback.message.answer(text=api.ApiService.tv_model(id), 
+                                      reply_markup=buttons.MarkUp.createMarkup([buttons.Button.createCustomButton("< Back", "tv_general")], row_width=1), parse_mode="HTML")
+    else:
+        await callback.message.answer(text=api.ApiService.tv_model(id),
+                                      reply_markup=buttons.MarkUp.createMarkup([buttons.Button.createCustomButton("< Back", "tv_trending")], row_width=1), parse_mode="HTML")
+    
+    await callback.message.delete()
+    
+@dp.callback_query_handler(text_contains=' person')
+async def person_callback_handler(callback: types.CallbackQuery):
+    await callback.answer("Loading..")
+    
+    data = callback.data.split()
+    id = data[0]
+    search_request = " ".join(data[1:len(data) - 1])
+    
+    await callback.message.answer(text=api.ApiService.person_model(id),
+                                  reply_markup=buttons.MarkUp.createMarkup([buttons.Button.createCustomButton("< Back", "person_list " + search_request)], row_width=1), parse_mode="HTML")
+   
+    await callback.message.delete()
+
+@dp.callback_query_handler(text_contains='person_list ')
+async def person_back_button_handler(callback: types.CallbackQuery):
+    
+    search_request = ' '.join(callback.data.split()[1:])
+    await callback.message.answer(text=replies.PERSON_REPLY.format(search_request), reply_markup=buttons.MarkUp.personSearchMarkUp(search_request))
     await callback.message.delete()

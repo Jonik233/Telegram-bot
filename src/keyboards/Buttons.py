@@ -34,26 +34,48 @@ class MarkUp:
     @staticmethod
     def searchResultsMarkUp(search_request: str, product_type: str):
         products = api.ApiService.get_products(search_request, product_type)
-        searchMarkUp = MarkUp.createMarkup([InlineKeyboardButton(text=product["title" if product_type == "movie" else "name"], callback_data=str(product["id"]) + " " + product_type + " " + search_request) for product in products], row_width=1)
+        searchMarkUp = MarkUp.createMarkup([InlineKeyboardButton(text=product["title" if product_type == "movie" else "name"], callback_data="search" + " " + str(product["id"]) + " " + product_type + " " + search_request) for product in products], row_width=1)
         searchMarkUp.add(closeButton)
         return searchMarkUp
     
     @staticmethod
-    def ratingResultsMarkUp(tconsts:list()):
-        rating_markup = InlineKeyboardMarkup(row_width=3)
+    def personSearchMarkUp(search_request: str):
+        people = api.ApiService.get_people(search_request)
+        name_to_id_list = list()
         
-        for tconst in tconsts:
-            product = None
-            rating_markup.add(InlineKeyboardButton(text=product["title"]["title"], callback_data=tconst))
-        
-        rating_markup.add(left_button).insert(homeButton).insert(right_button)
+        for person in people:
+            actor = api.ApiService.get_person_details(person["id"])
+            name_to_id_list.append((actor["id"], actor["name"]))
 
-        return rating_markup
+        searchMarkUp = MarkUp.createMarkup([InlineKeyboardButton(text=name, callback_data=str(id) + " " + search_request + " person") for id, name in name_to_id_list], row_width=1)
+        searchMarkUp.add(closeButton)
+
+        return searchMarkUp
+    
+    @staticmethod
+    def generalRatingResultsMarkUp(product_type: str):
+        
+        products = api.ApiService.get_top_rated_movies() if product_type == "movie" else api.ApiService.get_top_rated_tv()
+
+        ratingMarkUp = MarkUp.createMarkup([InlineKeyboardButton(text=product["title" if product_type == "movie" else "name"], callback_data="ratings" + " " + str(product["id"]) + " " + product_type + " " + "general") for product in products], row_width=1)
+        ratingMarkUp.add(InlineKeyboardButton(text="< Back", callback_data="general"))
+        
+        return ratingMarkUp
+    
+    @staticmethod
+    def trendingRatingResultsMarkUp(product_type: str):
+        
+        products = api.ApiService.get_trending_movies() if product_type == "movie" else api.ApiService.get_trending_tv()
+
+        ratingMarkUp = MarkUp.createMarkup([InlineKeyboardButton(text=product["title" if product_type == "movie" else "name"], callback_data="ratings" + " " + str(product["id"]) + " " + product_type + " " + "trending") for product in products], row_width=1)
+        ratingMarkUp.add(InlineKeyboardButton(text="< Back", callback_data="trending"))
+        
+        return ratingMarkUp
     
 class Button:
     
     @staticmethod
-    def createBackButton(callback_data, product_type):
+    def createMediaSearchBackButton(callback_data, product_type):
         return InlineKeyboardButton(text="< Back", callback_data=f"back {product_type} {callback_data}")
 
     @staticmethod
