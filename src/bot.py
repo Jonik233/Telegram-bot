@@ -1,7 +1,7 @@
-from config import Config
+from config import TOKEN
 from aiogram import Bot, Dispatcher, executor
 
-bot = Bot(Config.bot_token)
+bot = Bot(TOKEN)
 dp = Dispatcher(bot)                                                                                                                                              
 
 async def shutdown(dp):

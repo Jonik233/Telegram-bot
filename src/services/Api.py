@@ -30,6 +30,7 @@ class ApiService:
     
     __trending_tv_url = "https://api.themoviedb.org/3/tv/popular?api_key=15e383204c1b8a09dbfaaa4c01ed7e17&language=en-US&page=1"
     
+    __similar_movies_url = "https://api.themoviedb.org/3/movie/{0}/similar?api_key=15e383204c1b8a09dbfaaa4c01ed7e17&language=en-US&page=1"
     
     @classmethod
     def get_products(cls, search_request, product_type):
@@ -214,3 +215,11 @@ class ApiService:
         
         return response["results"][:10]
     
+    @classmethod
+    def get_similar_movies(cls, movie_id):
+        
+        url = cls.__similar_movies_url.format(movie_id)
+        
+        response = requests.request("GET", url).json()
+        
+        return response["results"][:10]
